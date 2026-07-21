@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-5">Dashboard</h1>
+    
+    <!-- Current Stress Status Card -->
+    {% if current_stress_level >= 0 %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-{% if stress_color == 'success' %}success{% elif stress_color == 'warning' %}warning{% else %}danger{% endif %} shadow-lg">
+                <div class="card-body">
+                    <h4 class="card-title">Current Stress Level</h4>
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <span class="badge badge-{% if stress_color == 'success' %}success{% elif stress_color == 'warning' %}warning{% else %}danger{% endif %}" style="font-size: 2rem; padding: 20px;">
+                                {{ stress_category }}
+                            </span>
+                            <p class="mt-2"><strong>Score: {{ current_stress_level }}/10</strong></p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar {% if stress_color == 'success' %}bg-success{% elif stress_color == 'warning' %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ current_stress_level }}0%" aria-valuenow="{{ current_stress_level }}" aria-valuemin="0" aria-valuemax="10">
+                                    {{ current_stress_level }}/10
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Suggestions Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow-lg">
+                <div class="card-header {% if stress_color == 'success' %}bg-success{% elif stress_color == 'warning' %}bg-warning{% else %}bg-danger{% endif %} text-white">
+                    <h5 class="mb-0">💡 Suggestions for You</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        {% for suggestion in suggestions %}
+                            <li class="mb-2">
+                                <strong>{{ suggestion|first }}</strong>
+                                {% if suggestion|length > 1 %}
+                                    {{ suggestion|slice:"1:" }}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Logs -->
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Recent Stress Logs</h3>
+            <div class="card shadow">
+                <div class="card-body">
+                    {% if stress_logs %}
+                        <ul class="list-group list-group-flush">
+                            {% for log in stress_logs %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ log.date }}</strong>
+                                        <br>
+                                        <small class="text-muted">Mood: {{ log.get_mood_display }}</small>
+                                    </div>
+                                    <span class="badge badge-{% if log.stress_level <= 3 %}success{% elif log.stress_level <= 6 %}warning{% else %}danger{% endif %} badge-pill" style="font-size: 1rem; padding: 8px 12px;">
+                                        {{ log.stress_level }}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-center text-muted">No stress logs yet. <a href="{% url 'stress_log' %}">Create one now!</a></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h3>Stress Trend</h3>
+            <div class="card shadow">
+                <div class="card-body">
+                    <canvas id="stressChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script>
+    const stressValues = {{ stress_values|safe }};
+    
+    // Generate colors based on stress values
+    const backgroundColor = stressValues.map(value => {
+        if (value <= 3) return 'rgba(40, 167, 69, 0.2)';
+        if (value <= 6) return 'rgba(255, 193, 7, 0.2)';
+        return 'rgba(220, 53, 69, 0.2)';
+    });
+    
+    const borderColor = stressValues.map(value => {
+        if (value <= 3) return 'rgba(40, 167, 69, 1)';
+        if (value <= 6) return 'rgba(255, 193, 7, 1)';
+        return 'rgba(220, 53, 69, 1)';
+    });
+    
+    const stressData = {
+        labels: {{ stress_labels|safe }},
+        datasets: [{
+            label: 'Stress Levels',
+            data: stressValues,
+            backgroundColor: backgroundColor,
+            borderColor: borderColor,
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+        }]
+    };
+
+    const config = {
+        type: 'line',
+        data: stressData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 10,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    };
+
+    const stressChart = new Chart(
+        document.getElementById('stressChart'),
+        config
+    );
+</script>
+
+<style>
+    .badge-success { background-color: #28a745 !important; }
+    .badge-warning { background-color: #ffc107 !important; color: #000 !important; }
+    .badge-danger { background-color: #dc3545 !important; }
+</style>
+{% endblock %}

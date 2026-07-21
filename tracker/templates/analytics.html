@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-5">📊 Analytics & Insights</h1>
+    
+    {% if total_logs > 0 %}
+        <!-- Statistics Cards -->
+        <div class="row mb-5">
+            <div class="col-md-3">
+                <div class="card shadow text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Average Stress</h5>
+                        <h2 class="text-primary">{{ avg_stress }}/10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Highest Stress</h5>
+                        <h2 class="text-danger">{{ max_stress }}/10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Lowest Stress</h5>
+                        <h2 class="text-success">{{ min_stress }}/10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Logs</h5>
+                        <h2 class="text-info">{{ total_logs }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stress Distribution -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Stress Level Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stress Categories -->
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Stress Categories</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><span class="badge badge-success">Low</span> (0-3)</span>
+                                <strong>{{ low_count }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: {% if total_logs > 0 %}{{ low_count|floatformat:0 }}%{% else %}0%{% endif %}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><span class="badge badge-warning">Medium</span> (4-6)</span>
+                                <strong>{{ medium_count }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: {% if total_logs > 0 %}{{ medium_count|floatformat:0 }}%{% else %}0%{% endif %}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span><span class="badge badge-danger">High</span> (7-10)</span>
+                                <strong>{{ high_count }}</strong>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" style="width: {% if total_logs > 0 %}{{ high_count|floatformat:0 }}%{% else %}0%{% endif %}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stress Trend Chart -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Stress Level Trend (Last 30 Days)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No data available</h4>
+            <p>You haven't logged any stress data yet. <a href="{% url 'stress_log' %}" class="alert-link">Create a stress log</a> to see your analytics.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+
+<script>
+    {% if total_logs > 0 %}
+        // Distribution Pie Chart
+        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+        const distributionChart = new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Low', 'Medium', 'High'],
+                datasets: [{
+                    data: [{{ low_count }}, {{ medium_count }}, {{ high_count }}],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Trend Line Chart
+        const trendValues = {{ stress_values|safe }};
+        const backgroundColor = trendValues.map(value => {
+            if (value <= 3) return 'rgba(40, 167, 69, 0.2)';
+            if (value <= 6) return 'rgba(255, 193, 7, 0.2)';
+            return 'rgba(220, 53, 69, 0.2)';
+        });
+        
+        const borderColor = trendValues.map(value => {
+            if (value <= 3) return 'rgba(40, 167, 69, 1)';
+            if (value <= 6) return 'rgba(255, 193, 7, 1)';
+            return 'rgba(220, 53, 69, 1)';
+        });
+
+        const trendCtx = document.getElementById('trendChart').getContext('2d');
+        const trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ stress_labels|safe }},
+                datasets: [{
+                    label: 'Stress Level',
+                    data: trendValues,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: borderColor,
+                    pointBorderColor: borderColor
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    {% endif %}
+</script>
+{% endblock %}

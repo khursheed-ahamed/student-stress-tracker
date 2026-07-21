@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-5 text-center">💡 Wellbeing Resources & Support</h1>
+    <p class="text-center text-muted mb-5">Quick guide to help manage stress and improve your mental health</p>
+
+    <!-- Stress Relief Techniques -->
+    <div class="mb-5">
+        <h2 class="mb-4"><span class="badge badge-primary">Stress Relief Techniques</span></h2>
+        <div class="row">
+            {% for resource in resources_data.stress_relief %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ resource.title }}</h5>
+                        <p class="card-text text-muted">{{ resource.description }}</p>
+                        <div class="alert alert-light">
+                            <strong>💡 Tip:</strong> {{ resource.tip }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Exercise & Fitness -->
+    <div class="mb-5">
+        <h2 class="mb-4"><span class="badge badge-success">Exercise & Fitness</span></h2>
+        <div class="row">
+            {% for resource in resources_data.exercise %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">🏃 {{ resource.title }}</h5>
+                        <p class="card-text text-muted">{{ resource.description }}</p>
+                        <div class="alert alert-light">
+                            <strong>💡 Tip:</strong> {{ resource.tip }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Sleep Tips -->
+    <div class="mb-5">
+        <h2 class="mb-4"><span class="badge badge-info">Sleep & Rest</span></h2>
+        <div class="row">
+            {% for resource in resources_data.sleep %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">😴 {{ resource.title }}</h5>
+                        <p class="card-text text-muted">{{ resource.description }}</p>
+                        <div class="alert alert-light">
+                            <strong>💡 Tip:</strong> {{ resource.tip }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recommended Apps -->
+    <div class="mb-5">
+        <h2 class="mb-4"><span class="badge badge-danger">Recommended Apps</span></h2>
+        <div class="row">
+            {% for app in resources_data.apps %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm hover-shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">📱 {{ app.title }}</h5>
+                        <p class="card-text text-muted">{{ app.description }}</p>
+                        <a href="https://{{ app.link }}" target="_blank" class="btn btn-sm btn-outline-primary">Visit Website →</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Professional Help -->
+    <div class="mb-5">
+        <h2 class="mb-4"><span class="badge badge-dark">Professional Help</span></h2>
+        <div class="row">
+            {% for resource in resources_data.professional %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm hover-shadow border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title">👨‍⚕️ {{ resource.title }}</h5>
+                        <p class="card-text text-muted">{{ resource.description }}</p>
+                        <div class="alert alert-light">
+                            <strong>💡 Tip:</strong> {{ resource.tip }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card bg-light border-0 shadow">
+                <div class="card-body text-center py-5">
+                    <h4 class="mb-3">Need Support?</h4>
+                    <p class="text-muted mb-0">Taking care of your mental health is important. Don't hesitate to seek help when needed.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: box-shadow 0.3s ease;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    .badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+</style>
+{% endblock %}
